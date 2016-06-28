@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 
 namespace RoosterTools
 {
-    class SizingToolkit
+    public class SizingToolkit
     {
 
         public static double DuctEquivalentDiameter(double w, double h)
         {
-            double equivalentDiameter = Math.Pow(1.3 * (w * h), 0.625) / Math.Pow((w + h), 0.25);
+            double equivalentDiameter = 1.3 * Math.Pow((w * h), 0.625) / Math.Pow((w + h), 0.25);
             return equivalentDiameter;
         }
 

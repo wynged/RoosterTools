@@ -5,6 +5,14 @@ VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RoosterTools", "RoosterTools\RoosterTools.csproj", "{BBA1D8A6-1B95-4C90-94B0-2CD9AC6D7AC6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ductulator", "Ductulator\Ductulator.csproj", "{090EF3E2-ABFB-4282-A244-5F4DDE0A2715}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DynaMEP", "DynaRooster\DynaMEP.csproj", "{D8341D0E-736B-43FF-AD07-FE42B33DDB63}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FuzzyDyno", "FuzzyDyno\FuzzyDyno.csproj", "{FAB8CDA3-7F7F-4113-A544-0E2F96AA34EA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DynamoGraph", "DynamoGraph\DynamoGraph.csproj", "{5F90489F-C50C-490B-89E6-C3E8E122FE4E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +23,22 @@ Global
 		{BBA1D8A6-1B95-4C90-94B0-2CD9AC6D7AC6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BBA1D8A6-1B95-4C90-94B0-2CD9AC6D7AC6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BBA1D8A6-1B95-4C90-94B0-2CD9AC6D7AC6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{090EF3E2-ABFB-4282-A244-5F4DDE0A2715}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{090EF3E2-ABFB-4282-A244-5F4DDE0A2715}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{090EF3E2-ABFB-4282-A244-5F4DDE0A2715}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{090EF3E2-ABFB-4282-A244-5F4DDE0A2715}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D8341D0E-736B-43FF-AD07-FE42B33DDB63}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D8341D0E-736B-43FF-AD07-FE42B33DDB63}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D8341D0E-736B-43FF-AD07-FE42B33DDB63}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D8341D0E-736B-43FF-AD07-FE42B33DDB63}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FAB8CDA3-7F7F-4113-A544-0E2F96AA34EA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FAB8CDA3-7F7F-4113-A544-0E2F96AA34EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FAB8CDA3-7F7F-4113-A544-0E2F96AA34EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FAB8CDA3-7F7F-4113-A544-0E2F96AA34EA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5F90489F-C50C-490B-89E6-C3E8E122FE4E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5F90489F-C50C-490B-89E6-C3E8E122FE4E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5F90489F-C50C-490B-89E6-C3E8E122FE4E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5F90489F-C50C-490B-89E6-C3E8E122FE4E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

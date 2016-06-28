@@ -36,27 +36,38 @@ namespace RoosterTools
 
             //Create and Start Transaction
             Transaction t = new Transaction(_doc, "Testing");
-            t.Start();
+            //t.Start();
 
             //
             //Do the testing code here.
             //
-            FilteredElementCollector roomCol = new FilteredElementCollector(_doc).OfCategory(BuiltInCategory.OST_Rooms);
-            RevitLinkInstance link = _doc.GetElement(_sel.First()) as RevitLinkInstance;
-            Document linkDoc = link.GetLinkDocument();
+            FilteredElementCollector textColl = new FilteredElementCollector(_doc).OfClass(typeof(TextElement));
 
-            foreach (Room room in roomCol)
+            foreach ( TextElement te in textColl)
             {
-                LocationPoint rmLocation = room.Location as LocationPoint;
-                if (rmLocation == null) continue;
-                Room roomInLink = linkDoc.GetRoomAtPoint(rmLocation.Point);
-                testResults += String.Format("{0}", roomInLink.Id.IntegerValue.ToString());
+
+                testResults += String.Format("{0}\n", te.Text);
+                try
+                {
+                    testResults += String.Format("--{0}\n", te.LookupParameter("Sample Text").AsString());
+                    testResults += String.Format("--{0}\n", te.LookupParameter("Label").Definition);
+                }
+                catch
+                {
+                    testResults += "---None\n";
+                }
+
             }
 
-            //Commit Transaction
-            t.Commit();
 
-            TaskDialog.Show("TestResults", testResults);
+            //Commit Transaction
+            //t.Commit();
+
+
+            TaskDialog resultsDialog = new TaskDialog("TestResults");
+            resultsDialog.MainContent = testResults;
+            resultsDialog.Show();
+
             return Result.Succeeded;
         }
     }

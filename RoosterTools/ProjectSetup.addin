@@ -1,10 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <RevitAddIns>
   <AddIn Type="Command">
-    <Name>CreateSheets</Name>
+    <Name>ProjectSetup-RoomTags</Name>
     <Assembly>RoosterTools.dll</Assembly>
     <AddInId>6a38b515-7181-46e9-be37-1cdc70ac384e</AddInId>
-    <FullClassName>RoosterTools.RoomLabels</FullClassName>
+    <FullClassName>RoosterTools.ProjectSetup</FullClassName>
     <VendorId>MDSK</VendorId>
     <VendorDescription>Microdesk</VendorDescription>
   </AddIn>

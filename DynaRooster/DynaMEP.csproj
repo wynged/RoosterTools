@@ -4,21 +4,13 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{BBA1D8A6-1B95-4C90-94B0-2CD9AC6D7AC6}</ProjectGuid>
+    <ProjectGuid>{D8341D0E-736B-43FF-AD07-FE42B33DDB63}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>RoosterTools</RootNamespace>
-    <AssemblyName>RoosterTools</AssemblyName>
+    <RootNamespace>DynaMEP</RootNamespace>
+    <AssemblyName>DynaMEP</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <SccProjectName>
-    </SccProjectName>
-    <SccLocalPath>
-    </SccLocalPath>
-    <SccAuxPath>
-    </SccAuxPath>
-    <SccProvider>
-    </SccProvider>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -38,17 +30,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="RevitAPI">
-      <HintPath>C:\Program Files\Autodesk\Revit 2015\RevitAPI.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="RevitAPIUI">
-      <HintPath>C:\Program Files\Autodesk\Revit 2015\RevitAPIUI.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -57,20 +40,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ProjectSetup.cs" />
+    <Compile Include="DuctSizing.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SizingToolkit.cs" />
-    <Compile Include="Testing.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="ProjectSetup.addin">
-      <SubType>Designer</SubType>
-    </Content>
+    <ProjectReference Include="..\RoosterTools\RoosterTools.csproj">
+      <Project>{bba1d8a6-1b95-4c90-94b0-2cd9ac6d7ac6}</Project>
+      <Name>RoosterTools</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy "D:\_code\VisualStudio\RoosterTools\RoosterTools\ProjectSetup.addin" "C:\Users\erudisaile\AppData\Roaming\Autodesk\Revit\Addins\2015"
-copy "D:\_code\VisualStudio\RoosterTools\RoosterTools\bin\Debug\RoosterTools.dll" "C:\Users\erudisaile\AppData\Roaming\Autodesk\Revit\Addins\2015"</PostBuildEvent>
+    <PostBuildEvent>xcopy /y $(TargetPath) "C:\Users\erudisaile\AppData\Roaming\Dynamo\Dynamo Revit\1.0\packages\DynaMEP\DynaMEP\bin\"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

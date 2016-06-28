@@ -4,21 +4,13 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{BBA1D8A6-1B95-4C90-94B0-2CD9AC6D7AC6}</ProjectGuid>
+    <ProjectGuid>{FAB8CDA3-7F7F-4113-A544-0E2F96AA34EA}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>RoosterTools</RootNamespace>
-    <AssemblyName>RoosterTools</AssemblyName>
+    <RootNamespace>FuzzyDyno</RootNamespace>
+    <AssemblyName>FuzzyDyno</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <SccProjectName>
-    </SccProjectName>
-    <SccLocalPath>
-    </SccLocalPath>
-    <SccAuxPath>
-    </SccAuxPath>
-    <SccProvider>
-    </SccProvider>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -28,6 +20,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Debug\FuzzyDyno.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -38,17 +31,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="RevitAPI">
-      <HintPath>C:\Program Files\Autodesk\Revit 2015\RevitAPI.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="RevitAPIUI">
-      <HintPath>C:\Program Files\Autodesk\Revit 2015\RevitAPIUI.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="FuzzyString">
+      <HintPath>Resources\FuzzyString.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -57,21 +45,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ProjectSetup.cs" />
+    <Compile Include="FuzzyDyno.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SizingToolkit.cs" />
-    <Compile Include="Testing.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="ProjectSetup.addin">
-      <SubType>Designer</SubType>
-    </Content>
+    <EmbeddedResource Include="Resources\FuzzyDynoImages.resx" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <Content Include="Resources\FuzzyDyno.FuzzyStringComparisons.CompareTwoStrings.Large.png" />
+    <Content Include="Resources\FuzzyDyno.FuzzyStringComparisons.CompareTwoStrings.Small.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup>
-    <PostBuildEvent>copy "D:\_code\VisualStudio\RoosterTools\RoosterTools\ProjectSetup.addin" "C:\Users\erudisaile\AppData\Roaming\Autodesk\Revit\Addins\2015"
-copy "D:\_code\VisualStudio\RoosterTools\RoosterTools\bin\Debug\RoosterTools.dll" "C:\Users\erudisaile\AppData\Roaming\Autodesk\Revit\Addins\2015"</PostBuildEvent>
-  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
@@ -79,4 +64,16 @@ copy "D:\_code\VisualStudio\RoosterTools\RoosterTools\bin\Debug\RoosterTools.dll
   <Target Name="AfterBuild">
   </Target>
   -->
+  <Target Name="AfterBuild">
+    <GetReferenceAssemblyPaths TargetFrameworkMoniker=".NETFramework, Version=v2.0">
+      <Output TaskParameter="FullFrameworkReferenceAssemblyPaths" PropertyName="FrameworkAssembliesPath" />
+    </GetReferenceAssemblyPaths>
+    <!-- Get assembly -->
+    <GetAssemblyIdentity AssemblyFiles="$(OutDir)$(TargetName).dll">
+      <Output TaskParameter="Assemblies" ItemName="AssemblyInfo" />
+    </GetAssemblyIdentity>
+    <!-- Generate customization dll -->
+    <GenerateResource UseSourcePath="true" Sources="$(ProjectDir)\Resources\FuzzyDynoImages.resx" OutputResources="$(ProjectDir)\Resources\FuzzyDynoImages.resources" References="$(FrameworkAssembliesPath)System.Drawing.dll" />
+    <AL TargetType="library" EmbedResources="$(ProjectDir)\Resources\FuzzyDynoImages.resources" OutputAssembly="$(OutDir)FuzzyDyno.customization.dll" Version="%(AssemblyInfo.Version)" />
+  </Target>
 </Project>

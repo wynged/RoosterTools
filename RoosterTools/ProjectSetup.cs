@@ -18,29 +18,46 @@ namespace RoosterTools
     [Autodesk.Revit.Attributes.Regeneration(Autodesk.Revit.Attributes.RegenerationOption.Manual)]
     [Autodesk.Revit.Attributes.Journaling(Autodesk.Revit.Attributes.JournalingMode.NoCommandData)]
 
-    public class RoomLabels : IExternalCommand
+    public class ProjectSetup : IExternalCommand
     {
         #region PrivateVariables
-        String taggingRoomsReturnedNullString = String.Empty;
+        String clipboardText = String.Empty;
         String roomsWithTagsAddedString = String.Empty;
         #endregion
 
         public Autodesk.Revit.UI.Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
         {
-            Document _document = commandData.Application.ActiveUIDocument.Document;
-            RevitLinkInstance rvtLink;
-            Document _linkDoc;
-            try
-            {
-                rvtLink = _document.GetElement(commandData.Application.ActiveUIDocument.Selection.GetElementIds().First()) as RevitLinkInstance;
-                _linkDoc = rvtLink.GetLinkDocument();
-            }
-            catch
-            {
-                TaskDialog.Show("No Link Instance", "Please select a Revit Link Instance before running this command");
-                return Result.Failed;
-            }
+
+            UIDocument uidoc = commandData.Application.ActiveUIDocument;
+
+            RevitLinkInstance rvtLink = ConfirmLinkInstanceSelected(uidoc);
+            if (rvtLink == null) return Result.Failed;
+
+            List<ElementId> views = GetAllLinkedRoomsVisibleInView(rvtLink.GetLinkDocument(), uidoc.ActiveView);
+
+            TaskDialog.Show("Thereare", String.Format("{0} rooms in this view", views.Count()));
+
+            ReTagRoomsInLink(commandData.Application.ActiveUIDocument, rvtLink);
+
+            return Result.Succeeded;
+            //if (ReTagRoomsInLink(commandData.Application.ActiveUIDocument) )
+            //{
+            //    return Result.Succeeded;
+            //}
+            //else
+            //{
+            //    return Result.Failed;
+            //}
             
+        }
+
+
+        //Method which will re-tag all rooms in a linked model in any view which is on a sheet
+        public bool ReTagRoomsInLink(UIDocument uiDoc, RevitLinkInstance rvtLink)
+        {
+            Document _document = uiDoc.Document;
+            UIDocument _uiDocument = uiDoc;
+            Document _linkDoc = rvtLink.GetLinkDocument();
             FilteredElementCollector viewCollector = new FilteredElementCollector(_document).OfCategory(BuiltInCategory.OST_Views).OfClass(typeof(ViewPlan));
 
             Transaction t = new Transaction(_document, "Re-do RoomTags");
@@ -52,14 +69,13 @@ namespace RoosterTools
                 //If the view is null, or the view is not on a sheet, move on.
                 if (view == null) continue;
                 if (view.IsTemplate) continue;
-                if (view.LookupParameter("Detail Number").AsString() == "" || view.LookupParameter("Detail Number").AsString() == null) continue;
-
-      
+                if (view.LookupParameter("Detail Number").AsString() == "-" || view.LookupParameter("Detail Number").AsString() == null) continue;
+                
 
                 //copy or remove all of the existing room tags
+                //Go one by one through each tag and does a test of copying the tag.
+                //If this test fails then the tag is removed
                 FilteredElementCollector roomTagcollector = new FilteredElementCollector(_document, view.Id).OfCategory(BuiltInCategory.OST_RoomTags);
-                ICollection<ElementId> originalTagIds = roomTagcollector.ToElementIds();
-
                 foreach (ElementId testc in roomTagcollector.ToElementIds())
                 {
                     SubTransaction subT = new SubTransaction(_document);
@@ -76,45 +92,25 @@ namespace RoosterTools
                     }
                     subT.RollBack();
                     if (!successTest) _document.Delete(testc);
-
                 }
 
+                //Create a HasSet (unique List) of all of the rooms tagged by roomTags visible in the current view.
                 HashSet<ElementId> taggedRooms = new HashSet<ElementId>();
-
                 FilteredElementCollector allRoomTagcollector = new FilteredElementCollector(_document, view.Id).OfCategory(BuiltInCategory.OST_RoomTags);
                 foreach (ElementId eId in allRoomTagcollector.ToElementIds())
                 {
                     RoomTag rt = _document.GetElement(eId) as RoomTag;
                     if (rt == null) continue;
-                    if (rt.Room != null)
-                    {
-                        taggedRooms.Add(rt.Room.Id);
-                    }
-                    else
-                    {
-                        try
-                        {
-                            LocationPoint pnt = rt.Location as LocationPoint;
-                            Room r = _linkDoc.GetRoomAtPoint(new XYZ(pnt.Point.X, pnt.Point.Y, pnt.Point.Z));
-                            if (r != null)
-                            {
-                                taggedRooms.Add(r.Id);
-                                //taggedRoomsString += r.Id.IntegerValue.ToString() + ',';
-                            }
-                        }
-                        catch
-                        {
-
-                        }
-                    }
+                    taggedRooms.Add(GetTaggedLinkedRoom(rt, _linkDoc));
                 }
 
-                
-                FilteredElementCollector linkedRoomCollector = new FilteredElementCollector(_linkDoc, view.Id).OfClass(typeof(SpatialElement));
-                double numberOfSpatialElements = linkedRoomCollector.Count();
-                foreach ( ElementId linkedRoomId in linkedRoomCollector.ToElementIds())
+
+                //FilteredElementCollector linkedRoomCollector = new FilteredElementCollector(_linkDoc).OfClass(typeof(SpatialElement));
+                //double numberOfSpatialElements = linkedRoomCollector.Count();
+                foreach (ElementId linkedRoomId in GetAllLinkedRoomsVisibleInView(_linkDoc, view)) //linkedRoomCollector.ToElementIds())
                 {
-                    try {
+                    try
+                    {
                         Room room = _linkDoc.GetElement(linkedRoomId) as Room;
                         LocationPoint locPnt = room.Location as LocationPoint;
                         XYZ linkRoomPnt = new XYZ(locPnt.Point.X, locPnt.Point.Y, locPnt.Point.Z);
@@ -134,98 +130,84 @@ namespace RoosterTools
                     {
                         //spatial element may not be a room
                         //nearest room may not exist, especially if rooms in arch are not placed.
-                        taggingRoomsReturnedNullString += linkedRoomId.IntegerValue.ToString() + ',';
+                        clipboardText += linkedRoomId.IntegerValue.ToString() + ',';
                         continue;
                     }
                 }
-
-                //foreach (ElementId roomId in roomCollector.ToElementIds())
-                //{
-                //    LocationPoint pnt = _linkDoc.GetElement(roomId).Location as LocationPoint;
-                //    UV roomUV = new UV(pnt.Point.X, pnt.Point.Y);
-                //    UV tagUV;
-                //    XYZ moveTag = new XYZ(0,0,0);
-                //    bool leader = false;
-                //    if (rtInfoList.Select(i => i.RoomID).Contains(roomId)) {
-                //        tagUV = rtInfoList.Where(ri => ri.RoomID == roomId).Select(ri => ri.RoomUV).First();
-                //        UV diffUV = tagUV.Subtract(roomUV);
-                //        moveTag = new XYZ(diffUV.U, diffUV.V, 0);
-                //        leader = rtInfoList.Where(ri => ri.RoomID == roomId).Select(ri => ri.HasLeader).First();
-                //    }
-                //    else
-                //    {
-                //        roomUV = new UV(pnt.Point.X, pnt.Point.Y);
-                //    }
-
-                //    RoomTag rTag = _document.Create.NewRoomTag(new LinkElementId(rvtLink.Id, roomId), roomUV , view.Id);
-                //    if (leader) rTag.HasLeader = true;
-                //    ElementTransformUtils.MoveElement(_document, rTag.Id, moveTag);
-                //}
             }
 
             t.Commit();
 
             //put copy string on clipboard.  Remove trailing ',' if present
-            taggingRoomsReturnedNullString.TrimEnd(',');
-            Clipboard.SetText(taggingRoomsReturnedNullString);
+            //clipboardText.TrimEnd(',');
+            Clipboard.SetText(roomsWithTagsAddedString);
+            return true;
+        }   
 
+        public ElementId GetTaggedLinkedRoom(RoomTag roomTag, Document linkDoc)
+        {
+            if (roomTag.Room != null)
+            {
+                return roomTag.Room.Id;
+            }
+            
+            try
+            {
+                LocationPoint pnt = roomTag.Location as LocationPoint;
+                Room r = linkDoc.GetRoomAtPoint(new XYZ(pnt.Point.X, pnt.Point.Y, pnt.Point.Z));
+                if (r != null)
+                {
+                    return r.Id;
+                    //taggedRoomsString += r.Id.IntegerValue.ToString() + ',';
+                }
+            }
+            catch
+            {
 
-            return Autodesk.Revit.UI.Result.Succeeded;
+            }
+            return null;
         }
 
-        //    public List<RoomTagInfo> GetRoomTagInfo(Document doc, Document linkDoc, ElementId viewPlanId)
-        //    {
-        //        List<RoomTagInfo> roomTags = new List<RoomTagInfo>();
+        public List<ElementId> GetAllLinkedRoomsVisibleInView(Document linkDoc, Autodesk.Revit.DB.View view)
+        {
+            List<ElementId> allRooms = new List<ElementId>();
+            FilteredElementCollector linkedSpatialCollector = new FilteredElementCollector(linkDoc).OfClass(typeof(SpatialElement));
 
-        //        FilteredElementCollector roomTagCollector = new FilteredElementCollector(doc, viewPlanId).OfCategory(BuiltInCategory.OST_RoomTags);
+            BoundingBoxXYZ bBox = view.get_BoundingBox(view);
+            XYZ minCorner = new XYZ(Math.Min(bBox.Min.X, bBox.Max.X), Math.Min(bBox.Min.Y, bBox.Max.Y), Math.Min(bBox.Min.Z, bBox.Max.Z));
+            XYZ maxCorner = new XYZ(Math.Max(bBox.Min.X, bBox.Max.X), Math.Max(bBox.Min.Y, bBox.Max.Y), Math.Max(bBox.Min.Z, bBox.Max.Z));
 
-        //        foreach ( RoomTag rt in roomTagCollector)
-        //        {
-        //            LocationPoint pnt = rt.Location as LocationPoint;
-        //            UV nuv = new UV(pnt.Point.X, pnt.Point.Y);
-        //            ElementId eId = null;
+            Outline outline = new Outline(minCorner, maxCorner);
+            BoundingBoxIntersectsFilter bBoxFilter = new BoundingBoxIntersectsFilter(outline);
+            FilteredElementCollector linkedIntersectCollector = new FilteredElementCollector(linkDoc).OfClass(typeof(SpatialElement)).WherePasses(bBoxFilter);
 
-        //            if (rt.Room != null)
-        //            {
-        //                eId = rt.Room.Id;
-        //            }
-        //            else
-        //            {
-        //                try {
-        //                    Room rm = linkDoc.GetRoomAtPoint(pnt.Point);
-        //                    eId = rm.Id;
-        //                }
-        //                catch
-        //                {
-        //                    //TaskDialog.Show("no room", String.Format("BadRoomTagId: {0}", rt.Id));
-        //                    copyString += String.Format("{0},", rt.Id.IntegerValue.ToString());
-        //                }
-        //            }
+            foreach (SpatialElement spatial in linkedIntersectCollector)
+            {
+                Room room = spatial as Room;
+                if (room == null) continue;
+                
+                allRooms.Add(room.Id);
+            }
+            return allRooms;
+        }
 
-        //            if (eId != null && nuv != null)
-        //            {
-        //                RoomTagInfo rtInfo = new RoomTagInfo(eId, nuv, rt.HasLeader);
-        //                roomTags.Add(rtInfo);
-        //            }
+        public RevitLinkInstance ConfirmLinkInstanceSelected(UIDocument uidoc)
+        {
 
-        //        }
-        //        return roomTags;
-        //    }
-
-        //    public class RoomTagInfo
-        //    {
-        //        public RoomTagInfo(ElementId roomid, UV roomuv, bool hasleader)
-        //        {
-        //            RoomID = roomid;
-        //            RoomUV = roomuv;
-        //            HasLeader = hasleader;
-        //        }
-
-        //        public ElementId RoomID { get; set; }
-        //        public UV RoomUV { get; set; }
-        //        public bool HasLeader { get; set; }
-        //    }
-        //}
+            RevitLinkInstance rvtLink = null;
+            Document _document = uidoc.Application.ActiveUIDocument.Document;
+            try
+            {
+                rvtLink = _document.GetElement(uidoc.Selection.GetElementIds().First()) as RevitLinkInstance;
+                return rvtLink;
+            }
+            catch
+            {
+                TaskDialog.Show("No Link Instance", "Please select a Revit Link Instance before running this command");
+                return rvtLink;
+            }
+            
+        }
         
     }
 }
