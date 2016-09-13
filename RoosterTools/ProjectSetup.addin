@@ -8,4 +8,12 @@
     <VendorId>MDSK</VendorId>
     <VendorDescription>Microdesk</VendorDescription>
   </AddIn>
+  <AddIn Type="Command">
+    <Name>CreateDetailFamilies</Name>
+    <Assembly>RoosterTools.dll</Assembly>
+    <AddInId>d3d69893-d7c4-41d7-b049-b384786067af</AddInId>
+    <FullClassName>RoosterTools.CreateDetailItemsFromCAD</FullClassName>
+    <VendorId>MDSK</VendorId>
+    <VendorDescription>Microdesk</VendorDescription>
+  </AddIn>
 </RevitAddIns>

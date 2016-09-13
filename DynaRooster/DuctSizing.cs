@@ -5,15 +5,10 @@ using System.Text;
 using System.Threading.Tasks;
 using RoosterTools;
 
-namespace DuctSizing
+namespace DynaMEP
 {
-    public class DuctSizing
+    public static class DuctSizing
     {
-
-        internal DuctSizing()
-        {
-
-        }
 
         public static double EquivalentDiameter(double PD, double flow)
         {
